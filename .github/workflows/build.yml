@@ -64,8 +64,6 @@ jobs:
 
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 
-          java -version
-
           yes | sdkmanager --licenses || true
 
           sdkmanager \
@@ -78,10 +76,23 @@ jobs:
           export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.0:$PATH"
 
-          which java
+          echo "Java:"
           java -version
+
+          echo "AIDL:"
           which aidl
-          aidl --version
+          aidl --help
+
+      - name: Check project files
+        run: |
+          echo "Project files:"
+          ls -la
+
+          echo "Checking main.py..."
+          test -f main.py
+
+          echo "Checking buildozer.spec..."
+          test -f buildozer.spec
 
       - name: Build APK
         env:
@@ -89,6 +100,7 @@ jobs:
           ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
         run: |
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.0:$PATH"
+
           buildozer -v android debug
 
       - name: Upload APK
