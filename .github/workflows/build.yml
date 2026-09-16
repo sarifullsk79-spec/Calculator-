@@ -9,10 +9,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -20,16 +20,27 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk \
+            git zip unzip \
+            openjdk-17-jdk \
             autoconf automake libtool pkg-config \
             zlib1g-dev libncurses5-dev \
-            libncursesw5-dev cmake libffi-dev \
-            libssl-dev
+            libncursesw5-dev cmake \
+            libffi-dev libssl-dev
 
       - name: Install Buildozer
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer cython==0.29.37
+          pip install buildozer
+          pip install "cython==0.29.37"
+
+      - name: Check project files
+        run: |
+          echo "Files in project:"
+          ls -la
+          echo "Checking main.py:"
+          test -f main.py
+          echo "Checking buildozer.spec:"
+          test -f buildozer.spec
 
       - name: Build APK
         run: |
@@ -40,3 +51,4 @@ jobs:
         with:
           name: calculator-apk
           path: bin/*.apk
+          if-no-files-found: error
