@@ -33,17 +33,34 @@ jobs:
           pip install buildozer
           pip install "cython==0.29.37"
 
-      - name: Check project files
+      - name: Install Android SDK tools
         run: |
-          echo "Files in project:"
-          ls -la
-          echo "Checking main.py:"
-          test -f main.py
-          echo "Checking buildozer.spec:"
-          test -f buildozer.spec
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk
+          export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd /tmp
+
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q commandlinetools-linux-11076708_latest.zip
+
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          mv cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/
+
+          yes | sdkmanager --licenses || true
+
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
 
       - name: Build APK
+        env:
+          ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
+          ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
         run: |
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.0:$PATH
           buildozer -v android debug
 
       - name: Upload APK
@@ -51,4 +68,4 @@ jobs:
         with:
           name: calculator-apk
           path: bin/*.apk
-          if-no-files-found: error
+          if-no-files-found: error￼Enter
