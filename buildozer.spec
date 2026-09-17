@@ -23,7 +23,6 @@ android.accept_sdk_license = True
 android.debug_artifact = apk
 android.release_artifact = aab
 
-
 [buildozer]
 
 log_level = 2
