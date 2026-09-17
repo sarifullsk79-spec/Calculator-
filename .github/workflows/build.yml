@@ -1,161 +1,34 @@
-name: Build Android APK
+[app]
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+title = Calculator
+package.name = calculator
+package.domain = org.sariful
 
-jobs:
-  build:
-    runs-on: ubuntu-22.04
+source.dir = .
+source.include_exts = py,png,jpg,jpeg,kv,atlas
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+version = 1.0
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
+requirements = python3,kivy
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "17"
+orientation = portrait
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            git \
-            zip \
-            unzip \
-            wget \
-            autoconf \
-            automake \
-            libtool \
-            pkg-config \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            zlib1g-dev
+fullscreen = 0
 
-      - name: Install Buildozer
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install cython==0.29.37
-          pip install buildozer==1.5.0
+android.api = 35
+android.minapi = 24
 
-      - name: Install Android SDK and NDK
-        shell: bash
-        run: |
-          set -e
+android.archs = arm64-v8a
 
-          export ANDROID_HOME="$HOME/.buildozer/android/platform/android-sdk"
-          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+android.accept_sdk_license = True
 
-          mkdir -p "$ANDROID_HOME/cmdline-tools"
+android.allow_backup = True
 
-          cd /tmp
+android.debug_artifact = apk
+android.release_artifact = aab
 
-          wget -q \
-            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
-            -O sdk.zip
 
-          unzip -q sdk.zip
+[buildozer]
 
-          rm -rf "$ANDROID_HOME/cmdline-tools/latest"
-
-          mv cmdline-tools \
-            "$ANDROID_HOME/cmdline-tools/latest"
-
-          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-
-          echo "Checking sdkmanager..."
-          test -f "$SDKMANAGER"
-          "$SDKMANAGER" --version
-
-          echo "Accepting licenses..."
-          yes | "$SDKMANAGER" --licenses || true
-
-          echo "Installing Android packages..."
-          "$SDKMANAGER" \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0" \
-            "ndk;25.2.9519653"
-
-          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> "$GITHUB_ENV"
-
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
-
-      - name: Prepare SDK compatibility
-        shell: bash
-        run: |
-          set -e
-
-          export ANDROID_HOME="$HOME/.buildozer/android/platform/android-sdk"
-
-          mkdir -p "$ANDROID_HOME/tools/bin"
-
-          ln -sf \
-            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
-            "$ANDROID_HOME/tools/bin/sdkmanager"
-
-          echo "SDK manager:"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
-
-          echo "Build tools:"
-          ls -la "$ANDROID_HOME/build-tools/35.0.0"
-
-          echo "NDK:"
-          ls -la "$ANDROID_HOME/ndk/25.2.9519653"
-
-      - name: Check Java
-        run: |
-          java -version
-          javac -version
-
-      - name: Check project
-        shell: bash
-        run: |
-          echo "Project files:"
-          ls -la
-
-          echo "Checking main.py..."
-          test -f main.py
-
-          echo "Checking buildozer.spec..."
-          test -f buildozer.spec
-
-          echo "main.py and buildozer.spec found."
-
-      - name: Clean previous build
-        run: |
-          rm -rf .buildozer
-          rm -rf bin
-
-      - name: Build APK
-        shell: bash
-        run: |
-          set -e
-          buildozer -v android debug
-
-      - name: Find APK
-        if: always()
-        run: |
-          echo "Searching for APK..."
-          find . -type f -name "*.apk" -print || true
-
-      - name: Upload APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Calculator-APK
-          path: bin/*.apk
-          if-no-files-found: error
+log_level = 2
+warn_on_root = 1￼Enter
